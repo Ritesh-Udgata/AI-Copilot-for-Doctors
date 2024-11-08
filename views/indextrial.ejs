@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Include jQuery for handling AJAX requests -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <form id="predictForm">
+        <label>Enter Symptoms:</label>
+        <div id="symptomFields">
+            <select id="symptomSelect" class="form-control" multiple></select>
+        </div>
+        <button type="submit">Get Prediction</button>
+    </form>
+
+    <!-- Display Predictions -->
+    <div id="predictions">
+        <h3>Predicted Diseases</h3>
+        <ul id="diseaseList"></ul>
+    </div>
+
+    <script>
+        // Fetch symptoms from the backend
+        async function fetchSymptoms() {
+            const response = await fetch('/get_symptoms');
+            const symptoms = await response.json();
+            const symptomSelect = $('#symptomSelect');
+
+            // Populate the dropdown with symptoms
+            symptomSelect.empty();
+            symptoms.forEach(symptom => {
+                symptomSelect.append(new Option(symptom, symptom));
+            });
+
+            // Enable select2 for searchable dropdown
+            symptomSelect.select2({
+                placeholder: "Select symptoms",
+                allowClear: true
+            });
+        }
+
+        // Initialize symptoms dropdown on page load
+        $(document).ready(fetchSymptoms);
+
+        // Handle form submission for predictions
+        document.getElementById('predictForm').onsubmit = async function(e) {
+            e.preventDefault();
+
+            // Collect selected symptoms as an array
+            const symptoms = $('#symptomSelect').val();
+
+            // Send symptoms array to Flask for prediction
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symptoms })
+            });
+
+            const predictions = await response.json();
+
+            // Update the UI with predictions
+            const diseaseList = document.getElementById('diseaseList');
+            diseaseList.innerHTML = '';
+            predictions.diseases.forEach(disease => {
+                const li = document.createElement('li');
+                li.textContent = disease;
+                diseaseList.appendChild(li);
+            });
+        };
+    </script>
+
+    <!-- Include Select2 for the searchable dropdown -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+</body>
+</html>

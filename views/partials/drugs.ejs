@@ -1,0 +1,11 @@
+<div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">Drug Recommendations</h5>
+      <ul class="list-group">
+        <% predictions.drugs.forEach(drug => { %>
+          <li class="list-group-item"><%= drug %></li>
+        <% }) %>
+      </ul>
+    </div>
+  </div>
+  
